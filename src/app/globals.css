@@ -1,26 +1,211 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   AURA — design tokens
+   Paleta: alabastro (base), linho (superfície clara), calcário (mineral),
+   rosé-argila (aura, decorativo), rosé-tinta (texto em rosé),
+   cacau (blocos profundos), tinta (texto), pedra (texto secundário).
+   ------------------------------------------------------------------ */
+@theme {
+  --color-alabastro: #ece6e0;
+  --color-linho: #f6f2ee;
+  --color-calcario: #d8cdc1;
+  --color-calcario-escuro: #c4b6a8;
+  --color-rose: #b4877b;
+  --color-rose-claro: #e3c2b8;
+  --color-rose-tinta: #87554a;
+  --color-cacau: #3a2520;
+  --color-cacau-claro: #573a33;
+  --color-tinta: #201b19;
+  --color-pedra: #62544e;
+  --color-marfim: #f3ece4;
+  --color-erro: #9b3426;
+
+  --font-serif: var(--font-bodoni), "Bodoni 72", "Didot", Georgia, serif;
+  --font-sans: var(--font-jost), "Futura", "Avenir Next", system-ui, sans-serif;
+
+  --ease-aura: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --breakpoint-xs: 26rem;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --header-h: 4.25rem;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (min-width: 64rem) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --header-h: 5rem;
   }
 }
 
+html {
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-alabastro);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.65;
+  font-feature-settings: "kern", "liga";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a,
+button,
+input,
+label,
+select,
+summary,
+textarea {
+  touch-action: manipulation;
+}
+
+::selection {
+  background: var(--color-rose-claro);
+  color: var(--color-tinta);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rose-tinta);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.on-dark :focus-visible,
+.on-dark:focus-visible {
+  outline-color: var(--color-rose-claro);
+}
+
+/* ------------------------------------------------------------------
+   Tipografia
+   ------------------------------------------------------------------ */
+@utility shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 90rem;
+  padding-inline: var(--gutter);
+}
+
+@utility font-display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-optical-sizing: auto;
+  letter-spacing: -0.025em;
+}
+
+@utility text-display-xl {
+  font-size: clamp(2.85rem, 10.4vw, 10rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+@utility text-display-l {
+  font-size: clamp(2.6rem, 6vw, 5.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.032em;
+}
+
+@utility text-display-m {
+  font-size: clamp(2rem, 3.6vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+
+@utility text-display-s {
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+
+@utility text-lead {
+  font-size: clamp(1.0625rem, 1.3vw, 1.25rem);
+  line-height: 1.6;
+}
+
+@utility wordmark {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  /* compensa o tracking da última letra para centralizar opticamente */
+  margin-right: -0.34em;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ------------------------------------------------------------------
+   Aura — o halo luminoso que identifica cada fórmula.
+   Defina --aura no elemento (cor da fórmula).
+   ------------------------------------------------------------------ */
+@utility aura-glow {
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--aura, #d9a092) 80%, white) 0%,
+    color-mix(in oklab, var(--aura, #d9a092) 62%, transparent) 45%,
+    transparent 100%
+  );
+  filter: blur(14px);
+}
+
+@keyframes aura-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.07);
+    opacity: 1;
+  }
+}
+
+/* Uma única respiração após a entrada do hero: sem loop contínuo (WCAG 2.2.2). */
+.aura-breathe {
+  animation: aura-breathe 4.8s var(--ease-soft) 1.4s 1 both;
+}
+
+/* ------------------------------------------------------------------
+   Utilidades
+   ------------------------------------------------------------------ */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
