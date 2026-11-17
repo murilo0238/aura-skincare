@@ -2,6 +2,10 @@
 
 Loja virtual conceitual de skincare desenvolvida pela [Garra Studios](https://garrastudios.online) para portfólio.
 
+**Demo:** https://aura.garrastudios.online
+
+![Página inicial da AURA](docs/preview.webp)
+
 > **Demonstração.** AURA é uma marca fictícia. Produtos, preços, fretes e pedidos são ilustrativos:
 > nenhum pagamento é solicitado, nenhum pedido é processado e nenhum dado pessoal é armazenado.
 > As imagens são renders ilustrativos, não fotografias de produtos reais.
@@ -33,9 +37,12 @@ npm run build && npm start   # produção
 npm run lint
 npm run typecheck
 npm run assets               # regenera os renders dos produtos
+npm run export               # site estático em out/ (como a demo publicada)
 ```
 
-Para o deploy, defina `NEXT_PUBLIC_SITE_URL` com a URL pública.
+Para o deploy, defina `NEXT_PUBLIC_SITE_URL` com a URL pública. O `npm run export` usa
+`https://aura.garrastudios.online` por padrão e gera uma pasta `out/` que qualquer servidor
+estático (Nginx, por exemplo) consegue servir.
 
 ## Stack
 

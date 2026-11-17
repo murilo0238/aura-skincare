@@ -2,7 +2,7 @@
 
 import { AnimatePresence, m } from "motion/react";
 import { ChevronDown, Info } from "lucide-react";
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { shippingCost, shippingOptions, type ShippingId } from "@/data/shipping";
 import { cn, formatPrice, pluralize } from "@/lib/format";
@@ -95,16 +95,8 @@ export function CheckoutView() {
   const errorSummaryRef = useRef<HTMLDivElement>(null);
   const submitTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Ao sair da página (a rota fica oculta, não desmontada), descarta dados digitados e a confirmação.
-  useLayoutEffect(() => {
-    return () => {
-      clearTimeout(submitTimer.current);
-      setValues(emptyCheckout);
-      setErrors({});
-      setStatus("idle");
-      setOrder(null);
-    };
-  }, []);
+  // Ao sair da página o componente desmonta e os dados digitados somem com ele.
+  useEffect(() => () => clearTimeout(submitTimer.current), []);
 
   // Aviso do navegador ao fechar/recarregar com dados preenchidos e pedido não concluído.
   const dirty = !order && Object.values(values).some((v) => v.trim() !== "");

@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/generate-seo.mjs && next dev",
+    "build": "node scripts/generate-seo.mjs && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "assets": "node scripts/generate-assets.mjs",
-    "typecheck": "tsc --noEmit"
+    "export": "node scripts/export.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.73.0",

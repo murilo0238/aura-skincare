@@ -15,20 +15,24 @@ npm run lint       # ESLint
 npm run typecheck  # tsc --noEmit
 npm run assets     # regenera os renders de produto (scripts/generate-assets.mjs)
 npm run assets -- editorial   # só as imagens editoriais, OG e ícone
+npm run export     # site estático em out/ (demo em https://aura.garrastudios.online)
 ```
 
 Defina `NEXT_PUBLIC_SITE_URL` no deploy (usada em metadata, sitemap e robots).
 
+**Deploy da demo:** `npm run export` e envio de `out/` para `/var/www/demos/aura` no VPS da Garra
+(a regra de demos do Nginx serve `<slug>.garrastudios.online`, com `noindex`). Só com OK do Murilo.
+
 ## Stack
 
-Next.js 16 (App Router, Turbopack, `cacheComponents` + `partialPrefetching`), React 19, TypeScript,
+Next.js 16 (App Router, Turbopack), React 19, TypeScript,
 Tailwind CSS 4 (tokens em `@theme`, sem `tailwind.config`), Motion (`motion/react` com `LazyMotion` +
 `m.*`), Zustand (carrinho), Lucide, next/image, next/font.
 
 ## Estrutura
 
 ```
-src/app/            rotas: / · /produtos · /produtos/[slug] · /checkout · 404 · error · sitemap · robots · icon
+src/app/            rotas: / · /produtos · /produtos/[slug] · /checkout · 404 · error · icon
 src/components/
   layout/           header, footer, menu mobile, busca
   cart/             carrinho lateral, botão de adicionar, seletor de quantidade
@@ -42,7 +46,7 @@ src/lib/            formatação (Intl), filtros do catálogo, validação do ch
 src/store/          cart.ts (Zustand + localStorage), ui.ts (painel aberto)
 src/hooks/          use-dialog-behavior (foco preso, Esc, scroll lock, devolução de foco)
 src/assets/         renders gerados (produtos e editorial)
-scripts/            gerador de renders e prancha de contato
+scripts/            renders (generate-assets), robots/sitemap (generate-seo), export estático (export)
 ```
 
 ## Decisões de arquitetura
@@ -54,14 +58,20 @@ scripts/            gerador de renders e prancha de contato
   só aparecem quando `useCartHydrated()` é verdadeiro. A chave é versionada (`aura:cart`, `version: 1`),
   guarda só `slug` + `quantidade`, é sanitizada ao ler e sincroniza entre abas pelo evento `storage`.
 - **Nenhum dado pessoal persiste.** O checkout mantém o formulário só em estado React, descarta os
-  dados ao confirmar e ao sair da rota (cleanup do `useLayoutEffect`, já que o Next 16 preserva rotas
-  ocultas com `<Activity>`). A newsletter não envia nem guarda e-mail.
+  dados ao confirmar e ao sair da rota (o componente desmonta). A newsletter não envia nem guarda e-mail.
 - **Filtros na URL.** `?categoria=&preco=&ordem=&busca=` são validados em `lib/catalog.ts`; valores
-  inválidos são ignorados. O catálogo usa `useSearchParams` dentro de `<Suspense>` (exigência do Cache Components).
-- **Página de produto com 404 real.** `params` é resolvido fora de `<Suspense>` para que slugs
-  inexistentes respondam 404; por isso a rota exporta `instant = false` (só desliga a validação de
-  navegação instantânea do dev). As cinco páginas são pré-renderizadas por `generateStaticParams`.
-  `dynamicParams` não existe com Cache Components.
+  inválidos são ignorados. O catálogo usa `useSearchParams` dentro de `<Suspense>`, então o
+  restante da página é pré-renderizado.
+- **Tudo estático, sem Cache Components.** O template do Next 16.4 liga `cacheComponents`, mas aqui
+  ele foi desligado: todas as rotas são estáticas, os dados são locais e o PPR que ele ativa é
+  incompatível com `output: "export"` (usado na demo). Sem ele, a rota de produto usa
+  `generateStaticParams` + `dynamicParams = false`, e qualquer outro slug responde 404.
+- **Export estático.** `AURA_EXPORT=1` (via `npm run export`) ativa `output: "export"`,
+  `trailingSlash` e imagens sem otimização sob demanda (os WebP já são leves). Sem a variável,
+  o build é o padrão com servidor.
+- **robots.txt e sitemap.xml como arquivos.** São gerados em `public/` por `scripts/generate-seo.mjs`
+  antes do `dev`/`build` (lendo os slugs de `products.ts`), porque rotas de metadata exigiriam
+  configuração extra no export. Os arquivos gerados ficam fora do Git.
 - **Composição.** Variantes explícitas (`Button variant="solid|outline|light"`), sem props booleanas
   de modo; estado compartilhado em stores, não em prop drilling; uma seção da Home por componente.
 - **Bundle.** Importações diretas (sem barrel files), `LazyMotion` com `domAnimation`, imagens estáticas
@@ -128,4 +138,5 @@ hidratação no console.
 - Sem backend: pedidos, frete e newsletter são simulados. CEP não é consultado.
 - Sem testes automatizados no repositório; os fluxos foram verificados com scripts no Chrome headless.
 - Renders ilustrativos no lugar de fotografia de produto.
-- Navegações do cliente para `/produtos/[slug]` não usam o App Shell instantâneo (ver decisão acima).
+- Na demo estática, um endereço inexistente mostra a página 404 padrão do Nginx (a regra de demos
+  do servidor não aponta para a 404 da AURA).

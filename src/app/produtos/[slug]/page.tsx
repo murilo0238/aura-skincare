@@ -31,12 +31,8 @@ export async function generateMetadata({ params }: PageProps<"/produtos/[slug]">
   };
 }
 
-/**
- * Os parâmetros são resolvidos fora de <Suspense> de propósito: assim um slug
- * inexistente responde com status 404 real. As cinco páginas são pré-renderizadas
- * (generateStaticParams) e os dados são locais, então a navegação não espera rede.
- */
-export const instant = false;
+/** Só os slugs do catálogo existem; qualquer outro responde 404. */
+export const dynamicParams = false;
 
 export default async function ProductPage({ params }: PageProps<"/produtos/[slug]">) {
   const { slug } = await params;
